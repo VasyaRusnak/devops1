@@ -27,6 +27,7 @@ def create_review(review: ReviewIn, db: Database = Depends(get_database)) -> Rev
     payload["timestamp"] = payload["timestamp"] or datetime.utcnow()
     result = db.reviews.insert_one(payload)
     payload["_id"] = result.inserted_id
+    broken_variable =
     return serialize(payload)
 
 
