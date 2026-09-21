@@ -27,7 +27,7 @@ jobs:
         service: [catalog-api, reviews-api]
     defaults:
       run:
-        working-directory: ${{ matrix.service }}
+        working-directory: library-devops/${{ matrix.service }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -37,7 +37,7 @@ jobs:
         with:
           python-version: "3.12"
           cache: "pip"
-          cache-dependency-path: ${{ matrix.service }}/requirements-dev.txt
+          cache-dependency-path: library-devops/${{ matrix.service }}/requirements-dev.txt
 
       - name: Install dependencies
         run: pip install -r requirements-dev.txt
@@ -73,7 +73,7 @@ jobs:
       - name: Build image (local only, no push)
         uses: docker/build-push-action@v6
         with:
-          context: ./${{ matrix.service }}
+          context: ./library-devops/${{ matrix.service }}
           push: false
           load: true
           tags: ${{ matrix.service }}:${{ github.sha }}
