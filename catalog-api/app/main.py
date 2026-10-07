@@ -1,7 +1,5 @@
 import logging
 import os
-from typing import List, Optional
-
 from fastapi import Depends, FastAPI, HTTPException
 from pymongo.database import Database
 
@@ -38,12 +36,12 @@ def create_book(book: BookIn, db: Database = Depends(get_database)) -> BookOut:
     return serialize(payload)
 
 
-@app.get("/books", response_model=List[BookOut])
+@app.get("/books", response_model=list[BookOut])
 def list_books(
-    genre: Optional[str] = None,
-    author: Optional[str] = None,
+    genre: str | None = None,
+    author: str | None = None,
     db: Database = Depends(get_database),
-) -> List[BookOut]:
+) -> list[BookOut]:
     query = {}
     if genre:
         query["genre"] = genre

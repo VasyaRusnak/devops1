@@ -8,8 +8,9 @@ class ReviewIn(BaseModel):
     book_id: str
     reviewer_name: str
     rating: int = Field(..., ge=1, le=5)
-    comment: Optional[str] = None
-    timestamp: Optional[datetime] = None
+    comment: str | None = None
+    timestamp: datetime | None = None
+    timestamp: float | None = None
 
 
 class ReviewOut(ReviewIn):

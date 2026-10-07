@@ -1,5 +1,3 @@
-from typing import Optional
-
 from pydantic import BaseModel, Field
 
 
@@ -8,7 +6,7 @@ class BookIn(BaseModel):
     author: str
     genre: str
     year: int = Field(..., ge=0, le=2100)
-    isbn: Optional[str] = None
+    isbn: str | None = None
 
 
 class BookOut(BookIn):
