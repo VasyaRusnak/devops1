@@ -1,0 +1,68 @@
+import logging
+import os
+from typing import List, Optional
+
+from fastapi import Depends, FastAPI, HTTPException
+from pymongo.database import Database
+
+from .db import DB_NAME, get_database
+from .models import BookIn, BookOut
+
+logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO").upper())
+logger = logging.getLogger(__name__)
+
+app = FastAPI(title="Library Catalog API")
+
+
+@app.on_event("startup")
+def log_startup_config() -> None:
+    logger.info("catalog-api starting, DB_NAME=%s", DB_NAME)
+
+
+def serialize(doc: dict) -> BookOut:
+    doc = dict(doc)
+    doc["id"] = str(doc.pop("_id"))
+    return BookOut(**doc)
+
+
+@app.get("/health")
+def health() -> dict:
+    return {"status": "ok"}
+
+
+@app.post("/books", response_model=BookOut, status_code=201)
+def create_book(book: BookIn, db: Database = Depends(get_database)) -> BookOut:
+    payload = book.model_dump()
+    result = db.books.insert_one(payload)
+    payload["_id"] = result.inserted_id
+    return serialize(payload)
+
+
+@app.get("/books", response_model=List[BookOut])
+def list_books(
+    genre: Optional[str] = None,
+    author: Optional[str] = None,
+    db: Database = Depends(get_database),
+) -> List[BookOut]:
+    query = {}
+    if genre:
+        query["genre"] = genre
+    if author:
+        query["author"] = author
+    docs = db.books.find(query)
+    return [serialize(doc) for doc in docs]
+
+
+@app.get("/books/{book_id}", response_model=BookOut)
+def get_book(book_id: str, db: Database = Depends(get_database)) -> BookOut:
+    from bson import ObjectId
+    from bson.errors import InvalidId
+
+    try:
+        doc = db.books.find_one({"_id": ObjectId(book_id)})
+    except InvalidId:
+        raise HTTPException(status_code=400, detail="Invalid book_id")
+
+    if doc is None:
+        raise HTTPException(status_code=404, detail="Book not found")
+    return serialize(doc)
