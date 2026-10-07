@@ -1,0 +1,49 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: library-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  mongo-express:
+    image: mongo-express:1
+    container_name: library-mongo-express
+    restart: unless-stopped
+    depends_on:
+      - mongo
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongo
+      ME_CONFIG_BASICAUTH_ENABLED: "false"
+
+  catalog-api:
+    build: ./catalog-api
+    container_name: library-catalog-api
+    restart: unless-stopped
+    depends_on:
+      - mongo
+    environment:
+      MONGO_URI: mongodb://mongo:27017
+      DB_NAME: library
+    ports:
+      - "8001:8000"
+
+  reviews-api:
+    build: ./reviews-api
+    container_name: library-reviews-api
+    restart: unless-stopped
+    depends_on:
+      - mongo
+      - catalog-api
+    environment:
+      MONGO_URI: mongodb://mongo:27017
+      DB_NAME: library
+    ports:
+      - "8002:8000"
+
+volumes:
+  mongo-data:
