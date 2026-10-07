@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: library-catalog
+data:
+  DB_NAME: "library"
+  LOG_LEVEL: "info"

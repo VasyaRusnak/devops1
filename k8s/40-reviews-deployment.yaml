@@ -1,0 +1,52 @@
+# ЗАМІНІТЬ ghcr.io/OWNER/REPO на свій реальний шлях з GHCR (у нижньому регістрі),
+# опублікований у ЛР№2, напр.: ghcr.io/ivanenko/library-devops/reviews-api:1.0.0
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reviews-api
+  namespace: library-catalog
+  labels:
+    app: reviews-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: reviews-api
+  template:
+    metadata:
+      labels:
+        app: reviews-api
+    spec:
+      containers:
+        - name: reviews-api
+          image: vasya1221/reviews-api:1.0.0
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: app-config
+          env:
+            - name: MONGO_URI
+              valueFrom:
+                secretKeyRef:
+                  name: mongo-secret
+                  key: MONGO_URI
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "300m"
+              memory: "256Mi"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10
