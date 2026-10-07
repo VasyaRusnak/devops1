@@ -1,7 +1,6 @@
 import logging
 import os
 from datetime import datetime
-from typing import List
 
 from fastapi import Depends, FastAPI
 from pymongo.database import Database
@@ -9,7 +8,6 @@ from pymongo.database import Database
 from .db import DB_NAME, get_database
 from .logic import compute_rating_summary
 from .models import RatingSummary, ReviewIn, ReviewOut
-
 logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO").upper())
 logger = logging.getLogger(__name__)
 

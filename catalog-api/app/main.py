@@ -1,11 +1,11 @@
 import logging
 import os
+
 from fastapi import Depends, FastAPI, HTTPException
 from pymongo.database import Database
 
 from .db import DB_NAME, get_database
 from .models import BookIn, BookOut
-
 logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO").upper())
 logger = logging.getLogger(__name__)
 
