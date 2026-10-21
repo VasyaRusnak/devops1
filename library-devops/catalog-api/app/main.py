@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 APP_VERSION = os.getenv("APP_VERSION", "dev")
 
-app = FastAPI(title="Library Catalog API")
+app = FastAPI(title="Library Catalog API (release 1.3)")
 
 
 @app.on_event("startup")
