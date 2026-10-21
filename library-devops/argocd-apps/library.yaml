@@ -1,0 +1,26 @@
+# Application застосунку: Helm-чарт із charts/library та значення для minikube.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: library
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/VasyaRusnak/devops1.git
+    targetRevision: gitops
+    path: library-devops/charts/library
+    helm:
+      valueFiles:
+        - values-minikube.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: library-catalog
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: false   # у п.6a спершу вимкнено, потім змінюється на true через commit
+    syncOptions:
+      - CreateNamespace=true

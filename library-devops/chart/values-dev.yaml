@@ -1,0 +1,18 @@
+# Середовище розробки: мінімум реплік і ресурсів, свіжа версія catalog-api, без Ingress.
+catalog:
+  image:
+    tag: "1.1.0"
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+
+reviews:
+  replicaCount: 1
+
+ingress:
+  enabled: false

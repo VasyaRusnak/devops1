@@ -1,10 +1,23 @@
+import logging
+import os
+
 from fastapi import Depends, FastAPI, HTTPException
 from pymongo.database import Database
 
-from .db import get_database
+from .db import DB_NAME, get_database
 from .models import BookIn, BookOut
 
+logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO").upper())
+logger = logging.getLogger(__name__)
+
+APP_VERSION = os.getenv("APP_VERSION", "dev")
+
 app = FastAPI(title="Library Catalog API")
+
+
+@app.on_event("startup")
+def log_startup_config() -> None:
+    logger.info("catalog-api %s starting, DB_NAME=%s", APP_VERSION, DB_NAME)
 
 
 def serialize(doc: dict) -> BookOut:
@@ -16,6 +29,11 @@ def serialize(doc: dict) -> BookOut:
 @app.get("/health")
 def health() -> dict:
     return {"status": "ok"}
+
+
+@app.get("/version")
+def version() -> dict:
+    return {"service": "catalog-api", "version": APP_VERSION}
 
 
 @app.post("/books", response_model=BookOut, status_code=201)

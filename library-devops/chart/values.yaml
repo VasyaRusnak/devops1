@@ -1,0 +1,71 @@
+# Значення за замовчуванням — середовище розробки (dev).
+nameOverride: ""
+fullnameOverride: ""
+
+image:
+  pullPolicy: IfNotPresent
+
+catalog:
+  image:
+    repository: vasya1221/catalog-api
+    tag: ""            # порожньо -> береться appVersion з Chart.yaml
+  replicaCount: 1
+  service:
+    type: ClusterIP
+    port: 8000
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+
+reviews:
+  image:
+    repository: vasya1221/reviews-api
+    tag: ""
+  replicaCount: 1
+  service:
+    type: ClusterIP
+    port: 8000
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+
+mongo:
+  image:
+    repository: mongo
+    tag: "7"
+  service:
+    port: 27017
+  persistence:
+    enabled: true
+    size: 1Gi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+# Несекретні параметри застосунку (потрапляють у ConfigMap)
+config:
+  dbName: library
+  logLevel: info
+
+# Чутливі параметри (потрапляють у Secret). Реальні паролі тут не зберігаються:
+# для prod пароль передається через --set secret.mongoRootPassword=...
+secret:
+  mongoRootUsername: admin
+  mongoRootPassword: dev-demo-password
+
+ingress:
+  enabled: false
+  className: nginx
+  host: library.local

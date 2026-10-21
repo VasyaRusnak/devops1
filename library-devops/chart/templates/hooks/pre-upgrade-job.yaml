@@ -1,0 +1,27 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "library.fullname" . }}-pre-upgrade
+  labels:
+    {{- include "library.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": pre-upgrade
+    "helm.sh/hook-weight": "0"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 0
+  template:
+    metadata:
+      labels:
+        {{- include "library.labels" . | nindent 8 }}
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: check-mongo
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              echo "pre-upgrade: перевіряю доступність MongoDB перед оновленням..."
+              nc -z -w 5 {{ include "library.fullname" . }}-mongo {{ .Values.mongo.service.port }} && echo "MongoDB доступна, оновлення дозволено"

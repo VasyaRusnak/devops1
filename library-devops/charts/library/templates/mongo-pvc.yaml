@@ -1,0 +1,15 @@
+{{- if .Values.mongo.persistence.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "library.fullname" . }}-mongo
+  labels:
+    {{- include "library.labels" . | nindent 4 }}
+    app.kubernetes.io/component: mongo
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.mongo.persistence.size }}
+{{- end }}

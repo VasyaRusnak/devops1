@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "library.fullname" . }}-reviews
+  labels:
+    {{- include "library.labels" . | nindent 4 }}
+    app.kubernetes.io/component: reviews
+spec:
+  type: {{ .Values.reviews.service.type }}
+  selector:
+    {{- include "library.selectorLabels" (dict "root" . "component" "reviews") | nindent 4 }}
+  ports:
+    - port: {{ .Values.reviews.service.port }}
+      targetPort: 8000

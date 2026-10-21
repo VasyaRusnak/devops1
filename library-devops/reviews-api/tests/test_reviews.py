@@ -67,3 +67,11 @@ def test_invalid_rating_rejected() -> None:
         json={"book_id": "book-3", "reviewer_name": "Хтось", "rating": 7},
     )
     assert resp.status_code == 422
+
+
+def test_version_endpoint() -> None:
+    resp = client.get("/version")
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["service"] == "reviews-api"
+    assert "version" in body

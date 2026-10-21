@@ -1,0 +1,22 @@
+{{- if .Values.helmHooks.enabled }}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ include "library.fullname" . }}-test
+  labels:
+    {{- include "library.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  restartPolicy: Never
+  containers:
+    - name: health-check
+      image: busybox:1.36
+      command:
+        - sh
+        - -c
+        - |
+          wget -qO- http://{{ include "library.fullname" . }}-catalog:{{ .Values.catalog.service.port }}/health &&
+          wget -qO- http://{{ include "library.fullname" . }}-reviews:{{ .Values.reviews.service.port }}/health
+{{- end }}

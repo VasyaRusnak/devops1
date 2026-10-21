@@ -65,3 +65,11 @@ def test_get_unknown_book_returns_404() -> None:
 def test_get_book_invalid_id_returns_400() -> None:
     resp = client.get("/books/not-a-valid-id")
     assert resp.status_code == 400
+
+
+def test_version_endpoint() -> None:
+    resp = client.get("/version")
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["service"] == "catalog-api"
+    assert "version" in body
