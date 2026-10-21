@@ -1,16 +1,12 @@
-# Р—РЅР°С‡РµРЅРЅСЏ РґР»СЏ РєР»Р°СЃС‚РµСЂР° minikube РїС–Рґ РєРµСЂСѓРІР°РЅРЅСЏРј Argo CD.
+# Значення для кластера minikube під керуванням Argo CD.
 catalog:
   image:
-
-    repository: vasya1221/catalog-api
     repository: vasya1221/library-catalog-api
-
     tag: "1.2.0"
   replicaCount: 2
 
 reviews:
   image:
-    repository: vasya1221/reviews-api
     repository: vasya1221/library-reviews-api
     tag: "1.2.0"
   replicaCount: 2
