@@ -10,8 +10,8 @@ spec:
   project: default
   source:
     repoURL: https://github.com/VasyaRusnak/devops1.git
-    targetRevision: main
-    path: charts/library
+    targetRevision: gitops
+    path: library-devops/charts/library
     helm:
       valueFiles:
         - values-minikube.yaml

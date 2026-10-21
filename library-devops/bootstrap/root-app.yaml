@@ -10,8 +10,8 @@ spec:
   project: default
   source:
     repoURL: https://github.com/VasyaRusnak/devops1.git
-    targetRevision: main
-    path: argocd-apps
+    targetRevision: gitops
+    path: library-devops/argocd-apps
   destination:
     server: https://kubernetes.default.svc
     namespace: argocd
