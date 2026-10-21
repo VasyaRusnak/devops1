@@ -1,13 +1,26 @@
+import logging
+import os
 from datetime import datetime
+from typing import List
 
 from fastapi import Depends, FastAPI
 from pymongo.database import Database
 
-from .db import get_database
+from .db import DB_NAME, get_database
 from .logic import compute_rating_summary
 from .models import RatingSummary, ReviewIn, ReviewOut
 
+logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO").upper())
+logger = logging.getLogger(__name__)
+
+APP_VERSION = os.getenv("APP_VERSION", "dev")
+
 app = FastAPI(title="Library Reviews API")
+
+
+@app.on_event("startup")
+def log_startup_config() -> None:
+    logger.info("reviews-api %s starting, DB_NAME=%s", APP_VERSION, DB_NAME)
 
 
 def serialize(doc: dict) -> ReviewOut:
@@ -21,6 +34,11 @@ def health() -> dict:
     return {"status": "ok"}
 
 
+@app.get("/version")
+def version() -> dict:
+    return {"service": "reviews-api", "version": APP_VERSION}
+
+
 @app.post("/reviews", response_model=ReviewOut, status_code=201)
 def create_review(review: ReviewIn, db: Database = Depends(get_database)) -> ReviewOut:
     payload = review.model_dump()
@@ -30,8 +48,8 @@ def create_review(review: ReviewIn, db: Database = Depends(get_database)) -> Rev
     return serialize(payload)
 
 
-@app.get("/reviews/{book_id}", response_model=list[ReviewOut])
-def list_reviews(book_id: str, db: Database = Depends(get_database)) -> list[ReviewOut]:
+@app.get("/reviews/{book_id}", response_model=List[ReviewOut])
+def list_reviews(book_id: str, db: Database = Depends(get_database)) -> List[ReviewOut]:
     docs = db.reviews.find({"book_id": book_id}).sort("timestamp", -1)
     return [serialize(doc) for doc in docs]
 

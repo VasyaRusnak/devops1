@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "library.fullname" . }}-config
+  labels:
+    {{- include "library.labels" . | nindent 4 }}
+data:
+  DB_NAME: {{ .Values.config.dbName | quote }}
+  LOG_LEVEL: {{ .Values.config.logLevel | quote }}

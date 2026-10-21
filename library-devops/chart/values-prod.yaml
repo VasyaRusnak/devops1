@@ -1,0 +1,33 @@
+# Продакшн: більше реплік і ресурсів, стабільна версія образу, Ingress увімкнено.
+# Пароль у файл не записується — передається під час встановлення:
+#   --set secret.mongoRootPassword=<пароль>
+catalog:
+  image:
+    tag: "1.0.0"
+  replicaCount: 3
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 300m
+      memory: 256Mi
+
+reviews:
+  image:
+    tag: "1.0.0"
+  replicaCount: 2
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 300m
+      memory: 256Mi
+
+secret:
+  mongoRootPassword: ""
+
+ingress:
+  enabled: true
+  host: library.local

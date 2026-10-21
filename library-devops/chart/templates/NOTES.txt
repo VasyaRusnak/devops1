@@ -1,0 +1,21 @@
+Реліз "{{ .Release.Name }}" встановлено в namespace "{{ .Release.Namespace }}".
+
+Як відкрити застосунок:
+{{- if .Values.ingress.enabled }}
+
+  1. Запустіть у окремому терміналі: minikube tunnel
+  2. Додайте у файл hosts рядок: <IP> {{ .Values.ingress.host }}   (IP: minikube ip)
+  3. Відкрийте:
+       http://{{ .Values.ingress.host }}/catalog/docs
+       http://{{ .Values.ingress.host }}/reviews/docs
+{{- else }}
+
+  Ingress вимкнено. Використайте port-forward:
+
+  kubectl port-forward -n {{ .Release.Namespace }} svc/{{ include "library.fullname" . }}-catalog 8001:{{ .Values.catalog.service.port }}
+  kubectl port-forward -n {{ .Release.Namespace }} svc/{{ include "library.fullname" . }}-reviews 8002:{{ .Values.reviews.service.port }}
+
+  Потім відкрийте http://localhost:8001/docs та http://localhost:8002/docs
+{{- end }}
+
+Перевірити реліз:  helm test {{ .Release.Name }} -n {{ .Release.Namespace }}

@@ -1,10 +1,24 @@
+import logging
+import os
+from typing import List, Optional
+
 from fastapi import Depends, FastAPI, HTTPException
 from pymongo.database import Database
 
-from .db import get_database
+from .db import DB_NAME, get_database
 from .models import BookIn, BookOut
 
+logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO").upper())
+logger = logging.getLogger(__name__)
+
+APP_VERSION = os.getenv("APP_VERSION", "dev")
+
 app = FastAPI(title="Library Catalog API")
+
+
+@app.on_event("startup")
+def log_startup_config() -> None:
+    logger.info("catalog-api %s starting, DB_NAME=%s", APP_VERSION, DB_NAME)
 
 
 def serialize(doc: dict) -> BookOut:
@@ -18,6 +32,11 @@ def health() -> dict:
     return {"status": "ok"}
 
 
+@app.get("/version")
+def version() -> dict:
+    return {"service": "catalog-api", "version": APP_VERSION}
+
+
 @app.post("/books", response_model=BookOut, status_code=201)
 def create_book(book: BookIn, db: Database = Depends(get_database)) -> BookOut:
     payload = book.model_dump()
@@ -26,12 +45,12 @@ def create_book(book: BookIn, db: Database = Depends(get_database)) -> BookOut:
     return serialize(payload)
 
 
-@app.get("/books", response_model=list[BookOut])
+@app.get("/books", response_model=List[BookOut])
 def list_books(
-    genre: str | None = None,
-    author: str | None = None,
+    genre: Optional[str] = None,
+    author: Optional[str] = None,
     db: Database = Depends(get_database),
-) -> list[BookOut]:
+) -> List[BookOut]:
     query = {}
     if genre:
         query["genre"] = genre

@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "library.fullname" . }}-catalog
+  labels:
+    {{- include "library.labels" . | nindent 4 }}
+    app.kubernetes.io/component: catalog
+spec:
+  type: {{ .Values.catalog.service.type }}
+  selector:
+    {{- include "library.selectorLabels" (dict "root" . "component" "catalog") | nindent 4 }}
+  ports:
+    - port: {{ .Values.catalog.service.port }}
+      targetPort: 8000

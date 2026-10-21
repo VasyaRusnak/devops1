@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "library.fullname" . }}-mongo
+  labels:
+    {{- include "library.labels" . | nindent 4 }}
+    app.kubernetes.io/component: mongo
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "library.selectorLabels" (dict "root" . "component" "mongo") | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "library.selectorLabels" (dict "root" . "component" "mongo") | nindent 8 }}
+    spec:
+      containers:
+        - name: mongo
+          image: "{{ .Values.mongo.image.repository }}:{{ .Values.mongo.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: 27017
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "library.secretName" . }}
+                  key: MONGO_ROOT_USERNAME
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "library.secretName" . }}
+                  key: MONGO_ROOT_PASSWORD
+          resources:
+            {{- toYaml .Values.mongo.resources | nindent 12 }}
+          volumeMounts:
+            - name: mongo-data
+              mountPath: /data/db
+      volumes:
+        - name: mongo-data
+          {{- if .Values.mongo.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ include "library.fullname" . }}-mongo
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
