@@ -1,4 +1,3 @@
-# Значення для кластера minikube під керуванням Argo CD.
 catalog:
   image:
     repository: vasya1221/library-catalog-api
