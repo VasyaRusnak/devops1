@@ -1,14 +1,17 @@
 # Значення для кластера minikube під керуванням Argo CD.
-# Паролів тут немає: Secret library-secret створюється в кластері вручну (див. docs/lab5-gitops.md).
 catalog:
   image:
+
     repository: vasya1221/catalog-api
+    repository: vasya1221/library-catalog-api
+
     tag: "1.3.0"
   replicaCount: 2
 
 reviews:
   image:
     repository: vasya1221/reviews-api
+    repository: vasya1221/library-reviews-api
     tag: "1.3.0"
   replicaCount: 2
 
