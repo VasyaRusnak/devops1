@@ -1,7 +1,6 @@
 import logging
 import os
 from datetime import datetime
-from typing import List
 
 from fastapi import Depends, FastAPI
 from pymongo.database import Database
@@ -48,8 +47,8 @@ def create_review(review: ReviewIn, db: Database = Depends(get_database)) -> Rev
     return serialize(payload)
 
 
-@app.get("/reviews/{book_id}", response_model=List[ReviewOut])
-def list_reviews(book_id: str, db: Database = Depends(get_database)) -> List[ReviewOut]:
+@app.get("/reviews/{book_id}", response_model=list[ReviewOut])
+def list_reviews(book_id: str, db: Database = Depends(get_database)) -> list[ReviewOut]:
     docs = db.reviews.find({"book_id": book_id}).sort("timestamp", -1)
     return [serialize(doc) for doc in docs]
 
