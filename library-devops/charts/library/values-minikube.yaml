@@ -5,14 +5,14 @@ catalog:
     repository: vasya1221/catalog-api
     repository: vasya1221/library-catalog-api
 
-    tag: "1.3.0"
+    tag: "9.9.9-not-exist"
   replicaCount: 2
 
 reviews:
   image:
     repository: vasya1221/reviews-api
     repository: vasya1221/library-reviews-api
-    tag: "1.3.0"
+    tag: "9.9.9-not-exist"
   replicaCount: 2
 
 secret:
