@@ -2,13 +2,13 @@ catalog:
   image:
     repository: vasya1221/catalog-api
     tag: "1.3.0"
-  replicaCount: 2
+  replicaCount: 3
 
 reviews:
   image:
     repository: vasya1221/reviews-api
     tag: "1.3.0"
-  replicaCount: 2
+  replicaCount: 3
 
 secret:
   existingSecret: library-secret
