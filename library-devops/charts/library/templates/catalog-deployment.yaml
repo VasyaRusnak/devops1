@@ -1,3 +1,4 @@
+{{- if not .Values.catalog.rollout.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -12,36 +13,5 @@ spec:
     matchLabels:
       {{- include "library.selectorLabels" (dict "root" . "component" "catalog") | nindent 6 }}
   template:
-    metadata:
-      labels:
-        {{- include "library.selectorLabels" (dict "root" . "component" "catalog") | nindent 8 }}
-    spec:
-      containers:
-        - name: catalog-api
-          image: "{{ .Values.catalog.image.repository }}:{{ .Values.catalog.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
-          ports:
-            - containerPort: 8000
-          envFrom:
-            - configMapRef:
-                name: {{ include "library.fullname" . }}-config
-          env:
-            - name: MONGO_URI
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "library.secretName" . }}
-                  key: MONGO_URI
-          resources:
-            {{- toYaml .Values.catalog.resources | nindent 12 }}
-          readinessProbe:
-            httpGet:
-              path: /health
-              port: 8000
-            initialDelaySeconds: 5
-            periodSeconds: 5
-          livenessProbe:
-            httpGet:
-              path: /health
-              port: 8000
-            initialDelaySeconds: 10
-            periodSeconds: 10
+    {{- include "library.catalog.podTemplate" . | nindent 4 }}
+{{- end }}

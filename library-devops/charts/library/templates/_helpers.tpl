@@ -46,3 +46,43 @@ app.kubernetes.io/component: {{ .component }}
 {{- printf "%s-secret" (include "library.fullname" .) }}
 {{- end }}
 {{- end }}
+
+{{/*
+Pod template каталогу: єдине джерело і для Deployment, і для Rollout.
+Тому при перемиканні catalog.rollout.enabled змінюється лише тип об'єкта, а не вміст пода.
+*/}}
+{{- define "library.catalog.podTemplate" -}}
+metadata:
+  labels:
+    {{- include "library.selectorLabels" (dict "root" . "component" "catalog") | nindent 4 }}
+spec:
+  containers:
+    - name: catalog-api
+      image: "{{ .Values.catalog.image.repository }}:{{ .Values.catalog.image.tag | default .Chart.AppVersion }}"
+      imagePullPolicy: {{ .Values.image.pullPolicy }}
+      ports:
+        - containerPort: 8000
+      envFrom:
+        - configMapRef:
+            name: {{ include "library.fullname" . }}-config
+      env:
+        - name: MONGO_URI
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "library.secretName" . }}
+              key: MONGO_URI
+      resources:
+        {{- toYaml .Values.catalog.resources | nindent 8 }}
+      readinessProbe:
+        httpGet:
+          path: /health
+          port: 8000
+        initialDelaySeconds: 5
+        periodSeconds: 5
+      livenessProbe:
+        httpGet:
+          path: /health
+          port: 8000
+        initialDelaySeconds: 10
+        periodSeconds: 10
+{{- end }}

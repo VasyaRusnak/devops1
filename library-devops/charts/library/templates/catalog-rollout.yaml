@@ -1,0 +1,26 @@
+{{- if .Values.catalog.rollout.enabled }}
+# Rollout замінює Deployment каталогу (вмикається catalog.rollout.enabled).
+# Назва збігається з назвою Deployment, тому Service library-catalog працює без змін.
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: {{ include "library.fullname" . }}-catalog
+  labels:
+    {{- include "library.labels" . | nindent 4 }}
+    app.kubernetes.io/component: catalog
+spec:
+  replicas: {{ .Values.catalog.replicaCount }}
+  revisionHistoryLimit: {{ .Values.catalog.rollout.revisionHistoryLimit }}
+  progressDeadlineSeconds: {{ .Values.progressDeadlineSeconds }}
+  selector:
+    matchLabels:
+      {{- include "library.selectorLabels" (dict "root" . "component" "catalog") | nindent 6 }}
+  template:
+    {{- include "library.catalog.podTemplate" . | nindent 4 }}
+  strategy:
+    canary:
+      maxSurge: {{ .Values.catalog.rollout.canary.maxSurge }}
+      maxUnavailable: {{ .Values.catalog.rollout.canary.maxUnavailable }}
+      steps:
+        {{- toYaml .Values.catalog.rollout.canary.steps | nindent 8 }}
+{{- end }}

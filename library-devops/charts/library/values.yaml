@@ -17,6 +17,22 @@ catalog:
     repository: vasya1221/catalog-api
     tag: ""            # порожньо -> береться appVersion з Chart.yaml
   replicaCount: 1
+  # Поступовий реліз через Argo Rollouts. false -> звичайний Deployment (dev), true -> Rollout.
+  rollout:
+    enabled: false
+    revisionHistoryLimit: 3
+    # Обрана стратегія: canary. Зі 4 репліками кожен setWeight відповідає цілому числу подів
+    # (25% = 1 под нової версії, 50% = 2, 75% = 3).
+    canary:
+      maxSurge: 1          # додатковий под під час реліза
+      maxUnavailable: 0    # доступність не знижується
+      steps:
+        - setWeight: 25
+        - pause: {duration: 30s}   # пауза з таймером: далі продовжується сама
+        - setWeight: 50
+        - pause: {}                # ручна пауза: чекає kubectl argo rollouts promote
+        - setWeight: 75
+        - pause: {duration: 30s}
   service:
     type: ClusterIP
     port: 8000
