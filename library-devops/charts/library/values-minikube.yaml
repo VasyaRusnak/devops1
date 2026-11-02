@@ -1,7 +1,7 @@
 catalog:
   image:
     repository: vasya1221/catalog-api
-    tag: "1.3.0"
+    tag: "1.4.0"
   replicaCount: 4
   rollout:
     enabled: true
