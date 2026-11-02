@@ -2,7 +2,9 @@ catalog:
   image:
     repository: vasya1221/catalog-api
     tag: "1.2.0"
-  replicaCount: 2
+  replicaCount: 4
+  rollout:
+    enabled: true
 
 reviews:
   image:
