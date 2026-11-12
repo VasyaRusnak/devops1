@@ -1,0 +1,76 @@
+# Генератор навантаження k6: рівномірний потік запитів на catalog і reviews усередині кластера.
+# Запуск:    kubectl apply -f loadtest/loadgen.yaml
+# Зупинка:   kubectl delete job loadgen -n library-catalog
+# Інтенсивність: змінна RATE (запитів за секунду), тривалість: DURATION.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: loadgen-script
+  namespace: library-catalog
+data:
+  load.js: |
+    import http from 'k6/http';
+
+    export const options = {
+      // Нове з'єднання на кожен запит: kube-proxy розподіляє трафік між подами рівномірно,
+      // і canary-под одержує свою частку запитів
+      noConnectionReuse: true,
+      scenarios: {
+        steady: {
+          executor: 'constant-arrival-rate',
+          rate: Number(__ENV.RATE || 30),
+          timeUnit: '1s',
+          duration: __ENV.DURATION || '15m',
+          preAllocatedVUs: 20,
+          maxVUs: 100,
+        },
+      },
+    };
+
+    const catalog = __ENV.CATALOG_URL || 'http://library-catalog:8000';
+    const reviews = __ENV.REVIEWS_URL || 'http://library-reviews:8000';
+
+    export default function () {
+      http.get(`${catalog}/books`);
+      if (Math.random() < 0.3) {
+        http.get(`${reviews}/reviews/demo/summary`);
+      }
+    }
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: loadgen
+  namespace: library-catalog
+spec:
+  backoffLimit: 0
+  ttlSecondsAfterFinished: 600
+  template:
+    metadata:
+      labels:
+        app: loadgen
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: k6
+          image: grafana/k6:0.54.0
+          args: ["run", "/scripts/load.js"]
+          env:
+            - name: RATE
+              value: "30"
+            - name: DURATION
+              value: "15m"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          volumeMounts:
+            - name: script
+              mountPath: /scripts
+      volumes:
+        - name: script
+          configMap:
+            name: loadgen-script

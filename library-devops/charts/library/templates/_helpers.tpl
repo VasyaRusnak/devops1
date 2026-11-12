@@ -61,7 +61,8 @@ spec:
       image: "{{ .Values.catalog.image.repository }}:{{ .Values.catalog.image.tag | default .Chart.AppVersion }}"
       imagePullPolicy: {{ .Values.image.pullPolicy }}
       ports:
-        - containerPort: 8000
+        - name: http
+          containerPort: 8000
       envFrom:
         - configMapRef:
             name: {{ include "library.fullname" . }}-config
@@ -71,6 +72,8 @@ spec:
             secretKeyRef:
               name: {{ include "library.secretName" . }}
               key: MONGO_URI
+        - name: FAIL_RATE
+          value: {{ .Values.catalog.failRate | quote }}
       resources:
         {{- toYaml .Values.catalog.resources | nindent 8 }}
       readinessProbe:

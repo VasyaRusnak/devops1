@@ -8,13 +8,14 @@ from pymongo.database import Database
 from .db import DB_NAME, get_database
 from .logic import compute_rating_summary
 from .models import RatingSummary, ReviewIn, ReviewOut
+from .observability import inject_failure, setup_observability
 
-logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO").upper())
 logger = logging.getLogger(__name__)
 
 APP_VERSION = os.getenv("APP_VERSION", "dev")
 
-app = FastAPI(title="Library Reviews API")
+app = FastAPI(title="Library Reviews API", dependencies=[Depends(inject_failure)])
+setup_observability(app, "reviews-api", APP_VERSION)
 
 
 @app.on_event("startup")

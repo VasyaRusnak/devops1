@@ -10,5 +10,6 @@ spec:
   selector:
     {{- include "library.selectorLabels" (dict "root" . "component" "reviews") | nindent 4 }}
   ports:
-    - port: {{ .Values.reviews.service.port }}
+    - name: http
+      port: {{ .Values.reviews.service.port }}
       targetPort: 8000

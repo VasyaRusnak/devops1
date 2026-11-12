@@ -1,0 +1,14 @@
+﻿{{- if .Values.dashboards.enabled }}
+# Grafana (sidecar) підхоплює ConfigMap з міткою grafana_dashboard.
+# JSON читається як файл (.Files.Get), тому шаблонні вирази у запитах дашборда не обробляються Helm.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "library.fullname" . }}-dashboard
+  labels:
+    {{- include "library.labels" . | nindent 4 }}
+    grafana_dashboard: "1"
+data:
+  library-overview.json: |-
+    {{- .Files.Get "dashboards/library-overview.json" | nindent 4 }}
+{{- end }}

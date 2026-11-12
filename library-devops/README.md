@@ -315,3 +315,9 @@ helm uninstall library -n library-catalog
 Конфігурація розгортання лежить у Git: `bootstrap/root-app.yaml` (кореневий Application), `argocd-apps/library.yaml` (Application застосунку), `charts/library/` (Helm-чарт і `values-minikube.yaml`). Покроковий порядок команд і перелік матеріалів для звіту: [docs/lab5-gitops.md](docs/lab5-gitops.md).
 
 Застосунок показує версію на `GET /version` (значення береться з `APP_VERSION`, задається при збірці образу `--build-arg APP_VERSION=...`). Пароль MongoDB у Git не зберігається: Secret `library-secret` створюється в кластері вручну.
+
+---
+
+# ЛР№7: Observability
+
+Стек моніторингу (kube-prometheus-stack, Loki, Grafana Alloy) описано в `argocd-apps/` і ставиться через Argo CD. Застосунок віддає `/metrics` і пише JSON-логи, дашборд лежить у чарті (`charts/library/dashboards/`), AnalysisTemplate автоматично відкочує canary-реліз, якщо частка успішних запитів нової версії нижча за 95%. Покроковий порядок і матеріали для звіту: [docs/lab7-observability.md](docs/lab7-observability.md).

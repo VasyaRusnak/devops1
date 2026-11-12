@@ -22,5 +22,19 @@ spec:
       maxSurge: {{ .Values.catalog.rollout.canary.maxSurge }}
       maxUnavailable: {{ .Values.catalog.rollout.canary.maxUnavailable }}
       steps:
-        {{- toYaml .Values.catalog.rollout.canary.steps | nindent 8 }}
+        {{- range .Values.catalog.rollout.canary.steps }}
+        {{- if hasKey . "analysis" }}
+        {{- if $.Values.analysis.enabled }}
+        - analysis:
+            templates:
+              - templateName: {{ include "library.fullname" $ }}-success-rate
+            args:
+              - name: canary-hash
+                valueFrom:
+                  podTemplateHashValue: Latest
+        {{- end }}
+        {{- else }}
+        {{- toYaml (list .) | nindent 8 }}
+        {{- end }}
+        {{- end }}
 {{- end }}

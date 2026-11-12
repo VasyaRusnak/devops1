@@ -10,5 +10,6 @@ spec:
   selector:
     {{- include "library.selectorLabels" (dict "root" . "component" "catalog") | nindent 4 }}
   ports:
-    - port: {{ .Values.catalog.service.port }}
+    - name: http
+      port: {{ .Values.catalog.service.port }}
       targetPort: 8000

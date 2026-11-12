@@ -1,0 +1,110 @@
+# Prometheus, Alertmanager, Grafana (kube-prometheus-stack). Ставиться з Git через Argo CD.
+# Перед першим sync у namespace monitoring має існувати Secret grafana-admin (див. docs/lab7-observability.md).
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kube-prometheus-stack
+  namespace: argocd
+  annotations:
+    # CRD ServiceMonitor / PrometheusRule мають з'явитися раніше за застосунок library
+    argocd.argoproj.io/sync-wave: "-1"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://prometheus-community.github.io/helm-charts
+    chart: kube-prometheus-stack
+    targetRevision: 92.13.1     # перевірити актуальну: helm search repo prometheus-community/kube-prometheus-stack
+    helm:
+      releaseName: kube-prometheus-stack
+      valuesObject:
+        # Компоненти, яких немає або які недоступні в minikube, вимкнено, щоб не було зайвих алертів і споживання пам'яті
+        defaultRules:
+          create: true
+          rules:
+            etcd: false
+            kubeControllerManager: false
+            kubeSchedulerAlerting: false
+            kubeSchedulerRecording: false
+            kubeProxy: false
+            nodeExporterAlerting: false
+            nodeExporterRecording: false
+        kubeEtcd:
+          enabled: false
+        kubeControllerManager:
+          enabled: false
+        kubeScheduler:
+          enabled: false
+        kubeProxy:
+          enabled: false
+        nodeExporter:
+          enabled: false          # node-exporter не стартує в minikube з драйвером docker
+        prometheusOperator:
+          admissionWebhooks:
+            enabled: false        # без webhook-ів немає Helm-хуків, які ускладнюють sync в Argo CD
+          resources:
+            requests:
+              cpu: 20m
+              memory: 64Mi
+            limits:
+              memory: 192Mi
+        alertmanager:
+          enabled: true
+          alertmanagerSpec:
+            resources:
+              requests:
+                cpu: 20m
+                memory: 48Mi
+              limits:
+                memory: 128Mi
+        prometheus:
+          prometheusSpec:
+            retention: 6h
+            scrapeInterval: 15s
+            # Prometheus бачить ServiceMonitor / PrometheusRule з будь-яких namespace без мітки release
+            serviceMonitorSelectorNilUsesHelmValues: false
+            podMonitorSelectorNilUsesHelmValues: false
+            ruleSelectorNilUsesHelmValues: false
+            probeSelectorNilUsesHelmValues: false
+            resources:
+              requests:
+                cpu: 100m
+                memory: 400Mi
+              limits:
+                memory: 1Gi
+        grafana:
+          # Пароль адміністратора не в Git: Secret grafana-admin створюється вручну
+          admin:
+            existingSecret: grafana-admin
+            userKey: admin-user
+            passwordKey: admin-password
+          sidecar:
+            dashboards:
+              enabled: true
+              label: grafana_dashboard
+              labelValue: "1"
+              searchNamespace: ALL      # дашборд лежить у namespace застосунку, а не monitoring
+          additionalDataSources:
+            - name: Loki
+              uid: loki
+              type: loki
+              access: proxy
+              url: http://loki.monitoring.svc.cluster.local:3100
+              isDefault: false
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              memory: 256Mi
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true      # CRD Prometheus Operator завеликі для client-side apply

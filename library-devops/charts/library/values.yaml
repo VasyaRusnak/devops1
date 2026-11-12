@@ -28,11 +28,13 @@ catalog:
       maxUnavailable: 0    # доступність не знижується
       steps:
         - setWeight: 25
-        - pause: {duration: 30s}   # пауза з таймером: далі продовжується сама
+        - analysis: {}             # перевірка метрик (AnalysisTemplate success-rate); якщо analysis.enabled=false, крок пропускається
         - setWeight: 50
-        - pause: {}                # ручна пауза: чекає kubectl argo rollouts promote
+        - analysis: {}
         - setWeight: 75
-        - pause: {duration: 30s}
+        - pause: {duration: 30s}   # пауза з таймером: далі продовжується сама
+  # Частка запитів (0..1), що отримують HTTP 500. Змінна оточення FAIL_RATE для демонстрації поганого релізу.
+  failRate: "0"
   service:
     type: ClusterIP
     port: 8000
@@ -95,3 +97,29 @@ ingress:
   enabled: false
   className: nginx
   host: library.local
+
+# --- ЛР7: спостережуваність ---
+metrics:
+  serviceMonitor:
+    enabled: false       # потребує CRD ServiceMonitor (kube-prometheus-stack)
+    interval: 15s
+
+# Автоматичний відкат за метриками (Argo Rollouts AnalysisTemplate)
+analysis:
+  enabled: false
+  prometheusAddress: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+  successRate: 0.95      # мінімальна частка успішних (не 5xx) запитів нової версії
+  initialDelay: 40s      # час на появу цілі в Prometheus і перші вибірки
+  interval: 20s
+  count: 5
+  failureLimit: 1        # скільки невдалих вимірювань допускається
+
+# Алерт на частку помилок (PrometheusRule)
+alerts:
+  enabled: false
+  errorRateThreshold: 0.05
+  forDuration: 30s
+
+# Дашборд Grafana як ConfigMap з міткою grafana_dashboard
+dashboards:
+  enabled: false

@@ -6,13 +6,14 @@ from pymongo.database import Database
 
 from .db import DB_NAME, get_database
 from .models import BookIn, BookOut
+from .observability import inject_failure, setup_observability
 
-logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO").upper())
 logger = logging.getLogger(__name__)
 
 APP_VERSION = os.getenv("APP_VERSION", "dev")
 
-app = FastAPI(title="Library Catalog API (release 1.3)")
+app = FastAPI(title="Library Catalog API", dependencies=[Depends(inject_failure)])
+setup_observability(app, "catalog-api", APP_VERSION)
 
 
 @app.on_event("startup")

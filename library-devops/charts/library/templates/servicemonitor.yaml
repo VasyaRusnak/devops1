@@ -1,0 +1,30 @@
+{{- if .Values.metrics.serviceMonitor.enabled }}
+# Prometheus Operator збирає /metrics з Service catalog і reviews (порт http).
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "library.fullname" . }}
+  labels:
+    {{- include "library.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+    matchExpressions:
+      - key: app.kubernetes.io/component
+        operator: In
+        values:
+          - catalog
+          - reviews
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  # Мітка пода rollouts-pod-template-hash стає міткою метрики rollouts_pod_template_hash:
+  # за нею AnalysisTemplate відокремлює canary-под від stable.
+  podTargetLabels:
+    - rollouts-pod-template-hash
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: {{ .Values.metrics.serviceMonitor.interval }}
+{{- end }}

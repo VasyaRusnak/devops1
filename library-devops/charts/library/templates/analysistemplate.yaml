@@ -1,0 +1,26 @@
+{{- if .Values.analysis.enabled }}
+# Аналіз для canary: частка не-5xx запитів лише нової версії (canary-hash) має бути >= порога.
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: {{ include "library.fullname" . }}-success-rate
+  labels:
+    {{- include "library.labels" . | nindent 4 }}
+spec:
+  args:
+    - name: canary-hash
+  metrics:
+    - name: success-rate
+      initialDelay: {{ .Values.analysis.initialDelay }}
+      interval: {{ .Values.analysis.interval }}
+      count: {{ .Values.analysis.count }}
+      failureLimit: {{ .Values.analysis.failureLimit }}
+      successCondition: result[0] >= {{ .Values.analysis.successRate }}
+      provider:
+        prometheus:
+          address: {{ .Values.analysis.prometheusAddress }}
+          query: |
+            sum(rate(http_requests_total{namespace="{{ .Release.Namespace }}",service="{{ include "library.fullname" . }}-catalog",rollouts_pod_template_hash="{{ "{{args.canary-hash}}" }}",status!~"5.."}[1m]))
+            /
+            sum(rate(http_requests_total{namespace="{{ .Release.Namespace }}",service="{{ include "library.fullname" . }}-catalog",rollouts_pod_template_hash="{{ "{{args.canary-hash}}" }}"}[1m]))
+{{- end }}
