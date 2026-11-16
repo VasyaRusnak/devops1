@@ -5,7 +5,7 @@ catalog:
     repository: vasya1221/catalog-api
     tag: "1.4.0"          # 1.4.0 = перша версія з /metrics, JSON-логами та FAIL_RATE (ЛР7)
   replicaCount: 4        # не менше 4 реплік: видно співвідношення версій під час canary
-  failRate: "0"            # "0" = версія здорова; "0.5" = 50% запитів отримують 500 (поганий реліз)
+  failRate: "0.5"          # "0" = версія здорова; "0.5" = 50% запитів отримують 500 (поганий реліз)
   rollout:
     enabled: true        # Deployment каталогу замінено на Rollout (стратегія canary описана у values.yaml)
 
