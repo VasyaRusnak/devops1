@@ -43,6 +43,8 @@ spec:
         prometheusOperator:
           admissionWebhooks:
             enabled: false        # без webhook-ів немає Helm-хуків, які ускладнюють sync в Argo CD
+          tls:
+            enabled: false        # TLS оператора потребує секрет від admission-webhook, якого немає
           resources:
             requests:
               cpu: 20m
@@ -95,9 +97,16 @@ spec:
           resources:
             requests:
               cpu: 50m
-              memory: 128Mi
-            limits:
               memory: 256Mi
+            limits:
+              memory: 512Mi       # Grafana 13 з 256Mi не встигає виконати міграції до liveness-проби
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: grafana
+            initialDelaySeconds: 180
+            timeoutSeconds: 30
+            failureThreshold: 10
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring

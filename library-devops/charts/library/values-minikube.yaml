@@ -5,7 +5,7 @@ catalog:
     repository: vasya1221/catalog-api
     tag: "1.4.0"          # 1.4.0 = перша версія з /metrics, JSON-логами та FAIL_RATE (ЛР7)
   replicaCount: 4        # не менше 4 реплік: видно співвідношення версій під час canary
-  failRate: "0.5"          # "0" = версія здорова; "0.5" = 50% запитів отримують 500 (поганий реліз)
+  failRate: "0"            # "0" = версія здорова; "0.5" = 50% запитів отримують 500 (поганий реліз)
   rollout:
     enabled: true        # Deployment каталогу замінено на Rollout (стратегія canary описана у values.yaml)
 
@@ -34,7 +34,7 @@ metrics:
 # Спочатку false: перший реліз 1.2.0 -> 1.4.0 іде без навантаження, а аналіз без трафіку
 # закінчується помилкою. Після запуску навантаження змініть на true (docs/lab7-observability.md, крок 7).
 analysis:
-  enabled: true
+  enabled: false
 
 alerts:
   enabled: true
