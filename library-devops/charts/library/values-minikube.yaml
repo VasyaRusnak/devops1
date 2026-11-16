@@ -34,7 +34,7 @@ metrics:
 # Спочатку false: перший реліз 1.2.0 -> 1.4.0 іде без навантаження, а аналіз без трафіку
 # закінчується помилкою. Після запуску навантаження змініть на true (docs/lab7-observability.md, крок 7).
 analysis:
-  enabled: false
+  enabled: true
 
 alerts:
   enabled: true
