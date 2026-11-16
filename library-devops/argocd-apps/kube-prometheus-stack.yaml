@@ -76,6 +76,8 @@ spec:
               limits:
                 memory: 1Gi
         grafana:
+          image:
+            tag: "11.3.0"         # Grafana 13 у minikube перевантажує CPU (unified storage на SQLite); 11.3 легша
           # Пароль адміністратора не в Git: Secret grafana-admin створюється вручну
           admin:
             existingSecret: grafana-admin
